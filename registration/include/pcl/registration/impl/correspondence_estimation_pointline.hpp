@@ -1,0 +1,269 @@
+/*
+ * Software License Agreement (BSD License)
+ *
+ *  Point Cloud Library (PCL) - www.pointclouds.org
+ *  Copyright (c) 2010-2011, Willow Garage, Inc.
+ *  Copyright (c) 2012-, Open Perception, Inc.
+ *
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of the copyright holder(s) nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
+ * $Id$
+ *
+ */
+#ifndef PCL_REGISTRATION_IMPL_CORRESPONDENCE_ESTIMATION_POINTLINE_H_
+#define PCL_REGISTRATION_IMPL_CORRESPONDENCE_ESTIMATION_POINTLINE_H_
+
+#include <pcl/common/io.h>
+#include <pcl/common/copy_point.h>
+
+// template <typename PointSource, typename PointTarget, typename Scalar> bool
+// pcl::registration::CorrespondenceEstimationPointLine<PointSource, PointTarget, Scalar>::initCompute ()
+// {
+//   if (!target_)
+//   {
+//     PCL_ERROR ("[pcl::registration::%s::compute] No input target dataset was given!\n", getClassName ().c_str ());
+//     return (false);
+//   }
+
+//   // Only update target kd-tree if a new target cloud was set
+//   // if (target_cloud_updated_ && !force_no_recompute_)
+//   // {
+//     target_shrinked_.reset(new pcl::PointCloud<PointSource>());
+//     for (int i=0; i < target_->points.size(); i++){
+
+//       PointSource p;
+//       p.x = target_->points[i].x / target_->points[i].z;
+//       p.y = target_->points[i].y / target_->points[i].z;
+//       p.z = 1;
+//       target_shrinked_->push_back(p);
+//      }
+//     // If the target indices have been given via setIndicesTarget
+//     if (target_indices_)
+//       tree_->setInputCloud (target_shrinked_, target_indices_);
+//     else
+//       tree_->setInputCloud (target_shrinked_);
+
+//   //   target_cloud_updated_ = false;
+//   // }
+
+//   return (PCLBase<PointSource>::initCompute ());
+// }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+template <typename PointSource, typename PointTarget, typename Scalar> void
+pcl::registration::CorrespondenceEstimationPointLine<PointSource, PointTarget, Scalar>::determineCorrespondences (
+    pcl::Correspondences &correspondences, double max_distance)
+{
+  if (!initCompute ())
+    return;
+
+  double max_dist_sqr = max_distance * max_distance;
+
+  correspondences.resize (indices_->size ());
+
+  std::vector<int> index (k_);
+  std::vector<float> distance (k_);
+  pcl::Correspondence corr;
+  unsigned int nr_valid_correspondences = 0;
+  
+  // Check if the template types are the same. If true, avoid a copy.
+  // Both point types MUST be registered using the POINT_CLOUD_REGISTER_POINT_STRUCT macro!
+  // if (isSamePointType<PointSource, PointTarget> ())
+  // {
+  //   // Iterate over the input set of source indices
+  //     for (std::vector<int>::const_iterator idx = indices_->begin (); idx != indices_->end (); ++idx)
+  //     {
+  //       tree_->nearestKSearch (input_->points[*idx], k_, index, distance);
+  //       if (distance[0] > max_dist_sqr)
+  //         continue;
+
+  //       corr.index_query = *idx;
+  //       float min_dist = std::numeric_limits<double>::max (); 
+  //       int min_index = 0;
+  //       for (int k=1; k<k_; k++){
+  //           Eigen::Matrix<Scalar, 4, 1> s (target_->points[index[k]].x, target_->points[index[k]].y, target_->points[index[k]].z, 0);
+  //           Eigen::Matrix<Scalar, 4, 1> t (input_->points[*idx].x, input_->points[*idx].y, input_->points[*idx].z, 0);
+  //           float dist = s.cross3(t).norm()/t.norm();
+  //           if (dist < min_dist){
+  //             min_dist = dist;
+  //             min_index = index[k];
+  //           }
+  //       }
+  //       corr.index_match = min_index;
+  //       corr.distance = min_dist;
+  //       correspondences[nr_valid_correspondences++] = corr;
+  //     }
+  // }
+  // else
+  // {
+    PointTarget pt;
+    pt.z = 1;
+    std::cout << target_->points[0].z << std::endl;
+    std::cout << target_->points[1].z << std::endl;
+    std::cout << target_->points[2].z << std::endl;
+    std::cout << target_->points[3].z << std::endl;
+    std::cout << target_->points[4].z << std::endl;
+    std::cout << input_->points[0].z << std::endl;
+    std::cout << input_->points[1].z << std::endl;
+    std::cout << input_->points[2].z << std::endl;
+    std::cout << input_->points[3].z << std::endl;
+    std::cout << input_->points[4].z << std::endl;
+    // Iterate over the input set of source indices
+    for (std::vector<int>::const_iterator idx = indices_->begin (); idx != indices_->end (); ++idx)
+    {
+      // Copy the source data to a target PointTarget format so we can search in the tree
+      //copyPoint (input_->points[*idx], pt);\
+      // pt.x = input_->points[*idx].x / input_->points[*idx].z;
+      // pt.y = input_->points[*idx].y / input_->points[*idx].z;
+      // pt.z = 1;
+      if (pt.z > 0.01 ||  pt.z < -0.01){
+        pt.x = input_->points[*idx].x;
+        pt.y = input_->points[*idx].y;
+        pt.z = input_->points[*idx].z;
+
+        pt.x /= pt.z;
+        pt.y /= pt.z;
+        pt.z /= pt.z;
+
+        tree_->nearestKSearch (pt, k_, index, distance);
+        if (distance[0] > max_dist_sqr)
+          continue;
+        float min_dist = std::numeric_limits<double>::max (); 
+        int min_index = 0;
+        for (int k=0; k<k_; k++){
+            Eigen::Matrix<Scalar, 4, 1> t (target_->points[index[k]].x, target_->points[index[k]].y, target_->points[index[k]].z, 0);
+            Eigen::Matrix<Scalar, 4, 1> s (input_->points[*idx].x, input_->points[*idx].y, input_->points[*idx].z, 0);
+            float dist = s.cross3(t).norm()/t.norm();
+            if (dist < min_dist){
+              min_dist = dist;
+              min_index = index[k];
+            }
+        }
+
+        corr.index_query = *idx;
+        corr.index_match = min_index;
+        // corr.index_query = min_index;
+        // corr.index_match = *idx;
+        corr.distance = min_dist;
+        // corr.index_match = index[0];
+        // corr.distance = distance[0];
+        correspondences[nr_valid_correspondences++] = corr;
+      }
+    }
+  // }
+  correspondences.resize (nr_valid_correspondences);
+  deinitCompute ();
+}
+///////////////////////////////////////////////////////////////////////////////////////////
+template <typename PointSource, typename PointTarget, typename Scalar> void
+pcl::registration::CorrespondenceEstimationPointLine<PointSource, PointTarget, Scalar>::determineReciprocalCorrespondences (
+    pcl::Correspondences &correspondences, double max_distance)
+{
+  // if (!initCompute ())
+  //   return;
+
+  // // setup tree for reciprocal search
+  // // Set the internal point representation of choice
+  // if (!initComputeReciprocal())
+  //   return;
+  // double max_dist_sqr = max_distance * max_distance;
+
+  // correspondences.resize (indices_->size());
+  // std::vector<int> index (k_);
+  // std::vector<float> distance (k_);
+  // std::vector<int> index_reciprocal (k_);
+  // std::vector<float> distance_reciprocal (k_);
+  // pcl::Correspondence corr;
+  // unsigned int nr_valid_correspondences = 0;
+  // int target_idx = 0;
+
+  // // Check if the template types are the same. If true, avoid a copy.
+  // // Both point types MUST be registered using the POINT_CLOUD_REGISTER_POINT_STRUCT macro!
+  // if (isSamePointType<PointSource, PointTarget> ())
+  // {
+  //   // Iterate over the input set of source indices
+  //   for (std::vector<int>::const_iterator idx = indices_->begin (); idx != indices_->end (); ++idx)
+  //   {
+  //     tree_->nearestKSearch (input_->points[*idx], k_, index, distance);
+  //     if (distance[0] > max_dist_sqr)
+  //       continue;
+
+  //     target_idx = index[0];
+
+  //     tree_reciprocal_->nearestKSearch (target_->points[target_idx], k_, index_reciprocal, distance_reciprocal);
+  //     if (distance_reciprocal[0] > max_dist_sqr || *idx != index_reciprocal[0])
+  //       continue;
+
+  //     corr.index_query = *idx;
+  //     corr.index_match = index[0];
+  //     corr.distance = distance[0];
+  //     // Todooo
+  //     correspondences[nr_valid_correspondences++] = corr;
+  //   }
+  // }
+  // else
+  // {
+  //   PointTarget pt_src;
+  //   PointSource pt_tgt;
+   
+  //   // Iterate over the input set of source indices
+  //   for (std::vector<int>::const_iterator idx = indices_->begin (); idx != indices_->end (); ++idx)
+  //   {
+  //     // Copy the source data to a target PointTarget format so we can search in the tree
+  //     copyPoint (input_->points[*idx], pt_src);
+
+  //     tree_->nearestKSearch (pt_src, k_, index, distance);
+  //     if (distance[0] > max_dist_sqr)
+  //       continue;
+
+  //     target_idx = index[0];
+
+  //     // Copy the target data to a target PointSource format so we can search in the tree_reciprocal
+  //     copyPoint (target_->points[target_idx], pt_tgt);
+
+  //     tree_reciprocal_->nearestKSearch (pt_tgt, k_, index_reciprocal, distance_reciprocal);
+  //     if (distance_reciprocal[0] > max_dist_sqr || *idx != index_reciprocal[0])
+  //       continue;
+
+  //     corr.index_query = *idx;
+  //     corr.index_match = index[0];
+  //     corr.distance = distance[0];
+  //     // Todoooo
+  //     correspondences[nr_valid_correspondences++] = corr;
+  //   }
+  // }
+  // correspondences.resize (nr_valid_correspondences);
+  // deinitCompute ();
+}
+
+
+
+#endif /* PCL_REGISTRATION_IMPL_CORRESPONDENCE_ESTIMATION__POINTLINE_H_ */

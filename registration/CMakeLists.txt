@@ -1,6 +1,6 @@
 set(SUBSYS_NAME registration)
 set(SUBSYS_DESC "Point cloud registration library")
-set(SUBSYS_DEPS common octree kdtree search sample_consensus features filters)
+set(SUBSYS_DEPS common octree kdtree search sample_consensus features filters io)
 
 set(build TRUE)
 PCL_SUBSYS_OPTION(build "${SUBSYS_NAME}" "${SUBSYS_DESC}" ON)
@@ -19,6 +19,7 @@ if(build)
         "include/pcl/${SUBSYS_NAME}/correspondence_estimation_normal_shooting.h"
         "include/pcl/${SUBSYS_NAME}/correspondence_estimation_backprojection.h"
         "include/pcl/${SUBSYS_NAME}/correspondence_estimation_organized_projection.h"
+        "include/pcl/${SUBSYS_NAME}/correspondence_estimation_pointline.h"
         "include/pcl/${SUBSYS_NAME}/correspondence_rejection.h"
         "include/pcl/${SUBSYS_NAME}/correspondence_rejection_distance.h"
         "include/pcl/${SUBSYS_NAME}/correspondence_rejection_median_distance.h"
@@ -35,6 +36,7 @@ if(build)
         "include/pcl/${SUBSYS_NAME}/correspondence_types.h"
         "include/pcl/${SUBSYS_NAME}/ia_ransac.h"
         "include/pcl/${SUBSYS_NAME}/icp.h"
+        "include/pcl/${SUBSYS_NAME}/icp-lines.h" # Alba
         "include/pcl/${SUBSYS_NAME}/joint_icp.h"
         "include/pcl/${SUBSYS_NAME}/incremental_registration.h"
         "include/pcl/${SUBSYS_NAME}/icp_nl.h"
@@ -57,6 +59,7 @@ if(build)
         "include/pcl/${SUBSYS_NAME}/transformation_estimation_dual_quaternion.h"
         "include/pcl/${SUBSYS_NAME}/transformation_estimation_lm.h"
         "include/pcl/${SUBSYS_NAME}/transformation_estimation_point_to_plane.h"
+        "include/pcl/${SUBSYS_NAME}/transformation_estimation_point_to_line.h"
         "include/pcl/${SUBSYS_NAME}/transformation_estimation_point_to_plane_weighted.h"
         "include/pcl/${SUBSYS_NAME}/transformation_estimation_point_to_plane_lls.h"
         "include/pcl/${SUBSYS_NAME}/transformation_estimation_point_to_plane_lls_weighted.h"
@@ -83,6 +86,7 @@ if(build)
         "include/pcl/${SUBSYS_NAME}/impl/correspondence_estimation_normal_shooting.hpp"
         "include/pcl/${SUBSYS_NAME}/impl/correspondence_estimation_backprojection.hpp"
         "include/pcl/${SUBSYS_NAME}/impl/correspondence_estimation_organized_projection.hpp"
+        "include/pcl/${SUBSYS_NAME}/impl/correspondence_estimation_pointline.hpp"
         "include/pcl/${SUBSYS_NAME}/impl/correspondence_rejection.hpp"
         "include/pcl/${SUBSYS_NAME}/impl/correspondence_rejection_distance.hpp"
         "include/pcl/${SUBSYS_NAME}/impl/correspondence_rejection_median_distance.hpp"
@@ -98,6 +102,7 @@ if(build)
         "include/pcl/${SUBSYS_NAME}/impl/correspondence_types.hpp"
         "include/pcl/${SUBSYS_NAME}/impl/ia_ransac.hpp"
         "include/pcl/${SUBSYS_NAME}/impl/icp.hpp"
+        "include/pcl/${SUBSYS_NAME}/impl/icp-lines.hpp"
         "include/pcl/${SUBSYS_NAME}/impl/joint_icp.hpp"
         "include/pcl/${SUBSYS_NAME}/impl/incremental_registration.hpp"
         "include/pcl/${SUBSYS_NAME}/impl/icp_nl.hpp"
@@ -131,6 +136,7 @@ if(build)
         src/correspondence_estimation_normal_shooting.cpp
         src/correspondence_estimation_backprojection.cpp
         src/correspondence_estimation_organized_projection.cpp
+        src/correspondence_estimation_pointline.cpp
         src/correspondence_rejection_distance.cpp
         src/correspondence_rejection_median_distance.cpp
         src/correspondence_rejection_surface_normal.cpp
@@ -148,6 +154,8 @@ if(build)
         #src/pairwise_graph_registration.cpp
         src/ia_ransac.cpp
         src/icp.cpp
+        src/icp-lines.cpp
+
         src/joint_icp.cpp
         src/gicp.cpp
         src/gicp6d.cpp
