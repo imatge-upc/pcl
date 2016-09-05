@@ -246,6 +246,9 @@ if (BUILD_tools)
         PCL_ADD_EXECUTABLE(pcl_mesh_sampling "${SUBSYS_NAME}" mesh_sampling.cpp)
         target_link_libraries(pcl_mesh_sampling pcl_common pcl_io pcl_visualization pcl_filters ${VTK_LIBRARIES})
         
+        PCL_ADD_EXECUTABLE(pcl_mesh_sampling_color "${SUBSYS_NAME}" mesh_sampling_color.cpp)
+        target_link_libraries(pcl_mesh_sampling_color pcl_common pcl_io pcl_visualization pcl_filters ${VTK_LIBRARIES})
+
         PCL_ADD_EXECUTABLE(pcl_virtual_scanner "${SUBSYS_NAME}" virtual_scanner.cpp)
         target_link_libraries(pcl_virtual_scanner pcl_common pcl_io pcl_filters pcl_visualization ${VTK_LIBRARIES})
 
